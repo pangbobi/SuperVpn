@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.2.0
+sh_ver=7.2.1
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -94,6 +94,8 @@ check_sys
 SER_IP=$(get_ip)
 
 firewall_default(){
+	echo -e "${Info}正在配置防火墙..."
+	sleep 5s
 	iptables -P INPUT ACCEPT
 	iptables -P OUTPUT ACCEPT
 	iptables -P FORWARD ACCEPT
@@ -251,8 +253,8 @@ finish_bbr_fq(){
 	sed -i 's/^bbr_status.*/bbr_status=true/' $CUR_D/.bash_profile
 	sleep 2s
 	apt update
-	apt -y install jq lsof resolvconf autoconf
-	apt -y install unzip mutt msmtp
+	apt -y install jq lsof resolvconf autoconf unzip mutt
+	rm -f /etc/msmtprc && apt -y install msmtp
 	apt --fix-broken install
 	#配置防火墙
 	firewall_default
