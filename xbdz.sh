@@ -298,10 +298,10 @@ finish_bbr_fq(){
 	sleep 2s
 	apt update
 	apt -y install jq lsof resolvconf autoconf
-	apt -y install mutt msmtp
-	apt --fix-broken install
 	#安装UFW防火墙管理程序
 	apt -y install ufw
+	apt -y install mutt msmtp
+	apt --fix-broken install
 	#UFW默认设置
 	ufw_default
 	ufw reload
