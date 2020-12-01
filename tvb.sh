@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.3.6
+sh_ver=6.3.7
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -887,6 +887,8 @@ manage_bt(){
 	else
 		bt
 	fi
+	sleep 2s
+	manage_bt
 }
 
 #卸载Trojan
