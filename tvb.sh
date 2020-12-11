@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.4.1
+sh_ver=6.4.4
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -272,8 +272,12 @@ finish_bbr_fq(){
 	sed -i 's/^bbr_status.*/bbr_status=true/' $CUR_D/.bash_profile
 	sleep 2s
 	apt update
-	apt -y install jq lsof resolvconf autoconf
+	apt -y install jq lsof unzip resolvconf autoconf
 	apt --fix-broken install
+	#更改系统时间并防止重启失效
+	#cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+	timedatectl set-timezone Asia/Shanghai
+	hwclock -w
 	#安装UFW防火墙管理程序
 	apt -y install ufw
 	#UFW默认设置
@@ -1014,18 +1018,27 @@ set_ssh(){
 }
 #设置Root密码
 set_root(){
-	#生成随机密码
-	pw=$(tr -dc 'A-Za-z0-9!@#$%^&*()[]{}+=_,' </dev/urandom |head -c 17)
-	echo root:${pw} |chpasswd
-	sed -i "/$SER_IP/d" $CUR_D/.bash_profile
-	sed -i "2i#$SER_IP:$ssh_port:$pw" $CUR_D/.bash_profile
-	#启用root密码登陆
-	sed -i '1,/PermitRootLogin/{s/.*PermitRootLogin.*/PermitRootLogin yes/}' /etc/ssh/sshd_config
-	sed -i '1,/PasswordAuthentication/{s/.*PasswordAuthentication.*/PasswordAuthentication yes/}' /etc/ssh/sshd_config
-	#重启ssh服务
-	service ssh restart
-	clear
-	echo -e "\n${Info}您的密码是：$(red_font $pw)"
+	clear && echo
+	#获取旧密码
+	pw=`grep "${ssh_port}:" $CUR_D/.bash_profile |awk -F ':' '{print$3}'`
+	if [ -n $pw ];then
+		echo -e "${Info}您的原密码是：$(green_font $pw)"
+		read -p "${Info}是否更改root密码[y/n](默认:n)" num
+		[ -z $num ] && num='n'
+	fi
+	if [ $num != 'n' ];then
+		#生成随机密码
+		pw=$(tr -dc 'A-Za-z0-9!@#$%^&*()[]{}+=_,' </dev/urandom |head -c 17)
+		echo root:${pw} |chpasswd
+		sed -i "/$SER_IP/d" $CUR_D/.bash_profile
+		sed -i "2i#$SER_IP:$ssh_port:$pw" $CUR_D/.bash_profile
+		#启用root密码登陆
+		sed -i '1,/PermitRootLogin/{s/.*PermitRootLogin.*/PermitRootLogin yes/}' /etc/ssh/sshd_config
+		sed -i '1,/PasswordAuthentication/{s/.*PasswordAuthentication.*/PasswordAuthentication yes/}' /etc/ssh/sshd_config
+		#重启ssh服务
+		service ssh restart
+	fi
+	echo -e "\n${Info}您的现密码是：$(red_font $pw)"
 	echo -e "${Tip}请务必记录您的密码！然后任意键返回主页..."
 	char=`get_char`
 	start_menu
@@ -1172,7 +1185,7 @@ start_menu(){
 	green_font ' 12.' ' 卸载BT Panel'
 	yello_font '—————————————系统—————————————'
 	green_font ' 13.' ' 设置SSH端口'
-	green_font ' 14.' ' 设置Root密码'
+	green_font ' 14.' ' 设置/查看Root密码'
 	green_font ' 15.' ' 设置防火墙'
 	yello_font '——————————————————————————————'
 	green_font ' 16.' ' 脚本自启管理'
