@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.5.5
+sh_ver=6.5.6
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -1021,7 +1021,7 @@ set_root(){
 	clear && echo
 	#获取旧密码
 	pw=`grep "${ssh_port}:" $CUR_D/.bash_profile |awk -F ':' '{print$3}'`
-	if [ $pw != '' ];then
+	if [[ -n $pw ]];then
 		echo -e "${Info}您的原密码是：$(green_font $pw)"
 		read -p "${Info}是否更改root密码[y/n](默认:n)：" num
 		[ -z $num ] && num='n'
