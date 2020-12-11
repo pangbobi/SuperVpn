@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.5.6
+sh_ver=6.5.7
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -1000,6 +1000,7 @@ set_ssh(){
 		ufw reload
 		#修改SSH端口记录
 		sed -i "s/^ssh_port.*/ssh_port=${SSH_PORT}/g" $CUR_D/.bash_profile
+		sed -i "s/$SER_IP:$ssh_port/$SER_IP:$SSH_PORT/g" $CUR_D/.bash_profile
 		#重启SSH
 		service ssh restart
 		#关闭安全权限
