@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.5.7
+sh_ver=6.6.9
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -272,7 +272,7 @@ finish_bbr_fq(){
 	sed -i 's/^bbr_status.*/bbr_status=true/' $CUR_D/.bash_profile
 	sleep 2s
 	apt update
-	apt -y install jq lsof unzip resolvconf autoconf
+	apt -y install jq lsof unzip expect resolvconf autoconf
 	apt --fix-broken install
 	#更改系统时间并防止重启失效
 	#cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -370,7 +370,8 @@ install_v2ray(){
 		char=`get_char`
 	else
 		bash <(curl -sL $V2RAY_U) -k
-		sleep 2s
+		echo -e "${Info}V2Ray更新完毕，按任意键继续..."
+		char=`get_char`
 	fi
 	get_status
 	manage_v2ray
@@ -693,28 +694,40 @@ manage_v2ray(){
 		char=`get_char`
 	}
 	add_user_v2ray(){
+		#获取当前multi-v2ray版本号
+		v2ray_ver=$(echo `v2ray -v`|sed 's,\x1B\[[0-9;]*[a-zA-Z],,g'|awk -F 'til: ' '{print$2}')
+		if [[ '3.9.0.1' > $v2ray_ver ]];then
+			echo -e "${Info}正在更新V2Ray..."
+			bash <(curl -sL $V2RAY_U) -k
+			clear && echo
+		fi
 		#当前用户数
 		n=$(jq '.inbounds|length' $V2RAY_INFO_P)
 		read -p "${Info}当前用户数$(red_font $n)，请输入要添加的用户个数(默认:1)：" num
 		[ -z $num ] && num=1
 		#循环添加用户
 		for((i=0;i<$num;i++));do
-			echo|v2ray add
+			expect <<-EOF
+	set time 30
+	spawn v2ray add
+	expect {
+		"定义端口" { send "\n"; exp_continue }
+		"传输方式" { send "3\n"; exp_continue }
+		"伪装域名" { send "www.bilibili.com\n" }
+	}
+	expect eof
+EOF
 		done
 		#开放端口防火墙
 		V2RAY_PORT=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
-		#循环改为websocket
 		end=$[$n+$num]
 		for((i=$n;i<$end;i++));do
 			general_v2ray_user_info
 			jq '.inbounds['$i'].settings.clients[0].email="'${email}'"' $V2RAY_INFO_P|jq '.inbounds['$i'].settings.clients[0].alterId='${alterId}'' >temp.json
-			jq '.inbounds['$i'].streamSettings.network="ws"' temp.json >$V2RAY_INFO_P
-			jq 'del(.inbounds['$i'].streamSettings.kcpSettings[])' $V2RAY_INFO_P >temp.json
-			jq '.inbounds['$i'].streamSettings.wsSettings.path="'${path}'"' temp.json|jq '.inbounds['$i'].streamSettings.wsSettings.headers.Host="www.bilibili.com"' >$V2RAY_INFO_P
+			mv -f temp.json $V2RAY_INFO_P
 			add_firewall ${V2RAY_PORT[$i]}
 			clean_iptables
 		done
-		rm -f temp.json
 		ufw reload
 		v2ray restart
 		clear && echo
