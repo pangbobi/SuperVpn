@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.6.9
+sh_ver=6.7.1
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -309,23 +309,19 @@ check_domain(){
 	fi
 }
 #安装Trojan
-TROJAN_U='https://git.io/trojan-install'
+TROJAN_U="${Github_U}/trojan.sh"
 install_trojan(){
 	if [ -z $trojan_status ];then
 		check_domain
-		echo -e "${Tip}请务必依次输入以下内容："
-		green_font '1'
-		green_font "$domain"
-		green_font '1'
-		green_font '直接回车' && green_font '直接回车' && green_font '直接回车'
-		echo -e "${Tip}按任意键继续..."
-		char=`get_char`
 		add_firewall 80
 		add_firewall 443
 		ufw reload
-		bash <(curl -sL $TROJAN_U)
+		curl -sO $TROJAN_U
+		chmod +x trojan.sh
+		source ./trojan.sh
 		sed -i '2itrojan_status=true' $CUR_D/.bash_profile
 		trojan_status='true'
+		rm -f trojan.sh
 		clear && echo
 		trojan info
 		echo -e "${Info}可访问$(green_font https://${domain})进入网页面板，按任意键继续..."
@@ -607,7 +603,8 @@ manage_v2ray_port(){
 #管理Trojan
 manage_trojan(){
 	add_user_trojan(){
-		read -p "${Info}请输入要添加的用户个数(默认:1)：" num
+		n=`trojan info|tail -8|head -1|awk -F '.' '{print$1}'`
+		read -p "${Info}当前用户数$(red_font $n)，请输入要添加的用户个数(默认:1)：" num
 		[ -z $num ] && num=1
 		user_l=(`trojan info|grep '用户名'|awk '{print $2}'`)
 		for((i=0;i<$num;i++));do
@@ -615,7 +612,16 @@ manage_trojan(){
 			while [[ ${user_l[@]} =~ "a$j" ]];do
 				j=$((j+1))
 			done
-			echo "a$j"|trojan add
+			uuid=$(cat /proc/sys/kernel/random/uuid)
+			expect <<-EOF
+	set time 30
+	spawn trojan add
+	expect {
+		"义用户名" { send "a$j\n"; exp_continue }
+		"定义密码" { send "$uuid\n" }
+	}
+	expect eof
+EOF
 			user_l[${#user_l[@]}]="a$j"
 		done
 		clear && echo
