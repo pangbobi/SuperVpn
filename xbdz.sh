@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.4.7
+sh_ver=7.4.8
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -292,9 +292,7 @@ fi
 
 #V2Ray用户信息生成
 general_v2ray_user_info(){
-	uuid=$(cat /proc/sys/kernel/random/uuid)
 	alterId=$[$[RANDOM%3]*16]
-	path="/$(tr -dc 'A-Za-z' </dev/urandom|head -c8)/"
 	email="$(tr -dc 'A-Za-z' </dev/urandom|head -c8)@163.com"
 }
 #安装V2Ray
@@ -305,11 +303,16 @@ install_v2ray(){
 		bash <(curl -sL $V2RAY_U) --zh
 		general_v2ray_user_info
 		jq '.inbounds[0].settings.clients[0].email="'${email}'"' $V2RAY_INFO_P >temp.json
-		jq '.inbounds[0].streamSettings.network="ws"' temp.json >$V2RAY_INFO_P
-		jq 'del(.inbounds[0].streamSettings.kcpSettings[])' $V2RAY_INFO_P >temp.json
-		jq '.inbounds[0].streamSettings.wsSettings.path="'${path}'"' temp.json|jq '.inbounds[0].streamSettings.wsSettings.headers.Host="www.bilibili.com"' >$V2RAY_INFO_P
-		rm -f temp.json
-		v2ray restart
+		mv -f temp.json $V2RAY_INFO_P
+		expect <<-EOF
+	set time 30
+	spawn v2ray stream
+	expect {
+		"传输方式" { send "3\n"; exp_continue }
+		"伪装域名" { send "www.bilibili.com\n" }
+	}
+	expect eof
+EOF
 		sed -i '2iv2ray_status=true' $CUR_D/.bash_profile
 		v2ray_status='true'
 		clear && echo
