@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.4.8
+sh_ver=7.4.9
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -308,7 +308,7 @@ install_v2ray(){
 	set time 30
 	spawn v2ray stream
 	expect {
-		"传输方式" { send "3\n"; exp_continue }
+		"选择新的" { send "3\n"; exp_continue }
 		"伪装域名" { send "www.bilibili.com\n" }
 	}
 	expect eof
