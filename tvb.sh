@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.7.4
+sh_ver=6.7.5
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -748,10 +748,8 @@ EOF
 		port_o=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
 		v2ray del
 		port_n=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
-		V2RAY_PORT=(`echo ${port_o[@]} ${port_n[@]}|xargs -n1|sort|uniq -u`)
-		for ele in ${V2RAY_PORT[@]};do
-			del_firewall $ele
-		done
+		port=`echo ${port_o[@]} ${port_n[@]}|xargs -n1|sort|uniq -u`
+		del_firewall $port
 	}
 	change_v2ray_port(){
 		manage_v2ray_port 'ufw delete'
