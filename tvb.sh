@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.7.5
+sh_ver=6.7.6
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -1106,6 +1106,12 @@ set_firewall(){
 		ufw deny $port/udp
 		echo -e "${Info}防火墙关闭成功！"
 	}
+	view_ufw_rules(){
+		ufw status
+		echo -e "${Info}防火墙规则如上，按任意键继续..."
+		char=`get_char`
+		set_firewall
+	}
 	reset_ufw(){
 		echo -e "${Info}请输入$(red_font y)"
 		ufw reset
@@ -1121,9 +1127,10 @@ set_firewall(){
 	green_font ' 3.' '  关闭单个端口'
 	green_font ' 4.' '  关闭多个端口'
 	yello_font '—————————————————————'
-	green_font ' 5.' '  重置规则'
+	green_font ' 5.' '  查看规则'
+	green_font ' 6.' '  重置规则'
 	yello_font '—————————————————————'
-	green_font ' 6.' '  返回主页'
+	green_font ' 7.' '  返回主页'
 	green_font ' 0.' '  退出脚本'
 	yello_font "—————————————————————\n"
 	read -p "${Info}请输入数字[0-6](默认:1)：" num
@@ -1141,11 +1148,13 @@ set_firewall(){
 		4)
 		close_multi_port;;
 		5)
-		reset_ufw;;
+		view_ufw_rules;;
 		6)
+		reset_ufw;;
+		7)
 		start_menu;;
 		*)
-		echo -e "${Error}请输入正确数字[0-6]"
+		echo -e "${Error}请输入正确数字[0-7]"
 		sleep 2s
 		set_firewall;;
 	esac
