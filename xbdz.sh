@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.4.9
+sh_ver=7.5.0
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -340,7 +340,7 @@ manage_v2ray(){
 		n=$(jq '.inbounds|length' $V2RAY_INFO_P)
 		read -p "${Info}当前用户数$(red_font $n)，请输入要更改UUID的用户编号[1-$n](默认:1)：" num
 		[ -z $num ] && num=1
-		i=$[$num-1]
+		i=$((num-1))
 		uuid_old=$(jq ".inbounds[$i].settings.clients[0].id" $V2RAY_INFO_P|sed 's/"//g')
 		sed -i "s#${uuid_old}#${uuid}#g" $V2RAY_INFO_P
 		v2ray restart
@@ -390,7 +390,9 @@ EOF
 		done
 		v2ray restart
 		clear && echo
-		v2ray info
+		begin=$((12*n+1))
+		end=$(((n+num)*12+1))
+		v2ray info|sed -n "$begin,${end}p"
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}
