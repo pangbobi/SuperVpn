@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.7.7
+sh_ver=6.7.8
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -729,7 +729,7 @@ EOF
 		done
 		#开放端口防火墙
 		V2RAY_PORT=($(cat $V2RAY_INFO_P|jq '.inbounds'|jq .[].port))
-		end=$[$n+$num]
+		end=$((n+num))
 		for((i=$n;i<$end;i++));do
 			general_v2ray_user_info
 			jq '.inbounds['$i'].settings.clients[0].email="'${email}'"' $V2RAY_INFO_P|jq '.inbounds['$i'].settings.clients[0].alterId='${alterId}'' >temp.json
@@ -740,9 +740,7 @@ EOF
 		ufw reload
 		v2ray restart
 		clear && echo
-		begin=$((12*n+1))
-		end=$(((n+num)*12+1))
-		v2ray info|sed -n "$begin,${end}p"
+		v2ray info|tail -$((12*num+1))
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}

@@ -7,7 +7,7 @@ export PATH
 #################
 
 #版本
-sh_ver=7.5.0
+sh_ver=7.5.1
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -382,7 +382,7 @@ manage_v2ray(){
 EOF
 		done
 		#设置不同alterId
-		end=$[$n+$num]
+		end=$((n+num))
 		for((i=$n;i<$end;i++));do
 			general_v2ray_user_info
 			jq '.inbounds['$i'].settings.clients[0].email="'${email}'"' $V2RAY_INFO_P|jq '.inbounds['$i'].settings.clients[0].alterId='${alterId}'' >temp.json
@@ -390,9 +390,7 @@ EOF
 		done
 		v2ray restart
 		clear && echo
-		begin=$((12*n+1))
-		end=$(((n+num)*12+1))
-		v2ray info|sed -n "$begin,${end}p"
+		v2ray info|tail -$((12*num+1))
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}
