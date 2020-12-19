@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.7.8
+sh_ver=6.7.9
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -692,13 +692,7 @@ manage_v2ray(){
 		v2ray restart
 		clear && echo
 		#更改UUID后显示新信息
-		start=$(v2ray info |grep -Fxn $num. |awk -F: '{print $1}')
-		if [ $num == $n ];then
-			end=$(v2ray info |grep -wn Tip: |awk -F: '{print $1}')
-		else
-			end=$(v2ray info |grep -Fxn $[$num+1]. |awk -F: '{print $1}')
-		fi
-		v2ray info|sed -n "$start,$[$end-1]p"
+		v2ray info|head -$((12*num))|tail -12
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}
