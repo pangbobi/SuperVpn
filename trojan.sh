@@ -164,15 +164,15 @@ installTrojan(){
         #/usr/local/bin/trojan
 		uuid=$(cat /proc/sys/kernel/random/uuid)
 		expect <<-EOF
-	set time 300
+	set timeout 100
 	spawn /usr/local/bin/trojan
 	expect {
 		"证书方式" { send "1"; exp_continue }
 		"书的域名" { send "$domain\n"; exp_continue }
-		"请选择:" { send "1"; exp_continue }
+		"ysql连接" { sleep 1s; send "1"; exp_continue }
 		"义用户名" { send "root\n"; exp_continue }
 		"定义密码" { send "$uuid\n"; exp_continue }
-		"生成json" { send "\n" }
+		"生成json" { sleep 1s; send "\n" }
 	}
 	expect eof
 EOF
