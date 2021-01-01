@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.0
+sh_ver=6.8.1
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -606,7 +606,7 @@ manage_v2ray_port(){
 #管理Trojan
 manage_trojan(){
 	add_user_trojan(){
-		n=`trojan info|tail -8|head -1|awk -F '.' '{print$1}'`
+		n=`trojan info|tail -9|head -1|awk -F '.' '{print$1}'`
 		read -p "${Info}当前用户数$(red_font $n)，请输入要添加的用户个数(默认:1)：" num
 		[ -z $num ] && num=1
 		for((i=0;i<$num;i++));do
