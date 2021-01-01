@@ -622,7 +622,7 @@ manage_trojan(){
 EOF
 		done
 		clear && echo
-		trojan info|tail -$((num*8))
+		trojan info|tail -$((num*9))
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}
