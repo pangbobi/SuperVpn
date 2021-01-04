@@ -1218,8 +1218,8 @@ start_menu(){
 	green_font ' 16.' ' 脚本自启管理'
 	green_font ' 0.' '  退出脚本'
 	yello_font "——————————————————————————————\n"
-	read -p "${Info}请输入数字[0-16](默认:2)：" num
-	[ -z $num ] && num=2
+	read -p "${Info}请输入数字[0-16](默认:1)：" num
+	[ -z $num ] && num=1
 	case $num in
 		0)
 		exit 0;;
