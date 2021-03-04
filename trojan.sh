@@ -164,7 +164,7 @@ installTrojan(){
         #/usr/local/bin/trojan
 		uuid=$(cat /proc/sys/kernel/random/uuid)
 		expect <<-EOF
-	set timeout 100
+	set timeout 300
 	spawn /usr/local/bin/trojan
 	expect {
 		"证书方式" { send "1"; exp_continue }

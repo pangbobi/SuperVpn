@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.1
+sh_ver=6.8.2
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -195,10 +195,10 @@ install_bbr_fq(){
 		apt update
 	fi
 	#安装BBR FQ
-	buster_V=($(apt search linux-image|grep headers|grep buster-backports|awk -F '-' '{print$3}'|sort -r|uniq))
-	if [[ `uname -r` != "${buster_V}-0.bpo.2-cloud-amd64" ]];then
-		apt -y install linux-image-${buster_V}-0.bpo.2-cloud-amd64
-		apt -y install linux-headers-${buster_V}-0.bpo.2-cloud-amd64
+	buster_V=$(apt search linux-image|grep headers|grep buster-backports|grep cloud|head -1|awk -F '/' '{print$1}'|awk -F 'rs-' '{print$2}')
+	if [[ `uname -r` != ${buster_V} ]];then
+		apt -y install linux-image-${buster_V}
+		apt -y install linux-headers-${buster_V}
 	fi
 	sed -i '2ibbr_status=false' $CUR_D/.bash_profile
 	echo -e "${Info}正在重启VPS(请稍后自行重新连接SSH)..."
@@ -1218,8 +1218,8 @@ start_menu(){
 	green_font ' 16.' ' 脚本自启管理'
 	green_font ' 0.' '  退出脚本'
 	yello_font "——————————————————————————————\n"
-	read -p "${Info}请输入数字[0-16](默认:1)：" num
-	[ -z $num ] && num=1
+	read -p "${Info}请输入数字[0-16](默认:2)：" num
+	[ -z $num ] && num=2
 	case $num in
 		0)
 		exit 0;;
