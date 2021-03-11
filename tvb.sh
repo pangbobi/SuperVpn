@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.2
+sh_ver=6.8.3
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -626,6 +626,12 @@ EOF
 		echo -e "${Info}按任意键继续..."
 		char=`get_char`
 	}
+	update_trojan(){
+		trojan update
+		trojan updateWeb
+		echo -e "${Info}Trojan已成功更新..."
+		sleep 2s
+	}
 	clear && echo
 	if [ -z $trojan_status ];then
 		check_install 'Trojan'
@@ -637,12 +643,13 @@ EOF
 		yello_font '——————信息查看——————'
 		green_font ' 3.' '  查看链接'
 		yello_font '—————Trojan设置—————'
-		green_font ' 4.' '  原版管理窗口'
+		green_font ' 4.' '  更新trojan'
+		green_font ' 5.' '  原版管理窗口'
 		yello_font '————————————————————'
-		green_font ' 5.' '  返回主页'
+		green_font ' 6.' '  返回主页'
 		green_font ' 0.' '  退出脚本'
 		yello_font "————————————————————\n"
-		read -p "${Info}请输入数字[0-5](默认:1)：" num
+		read -p "${Info}请输入数字[0-6](默认:1)：" num
 		[ -z $num ] && num=1
 		clear && echo
 		case $num in
@@ -657,11 +664,13 @@ EOF
 			echo -e "${Info}按任意键继续..."
 			char=`get_char`;;
 			4)
-			trojan;;
+			update_trojan;;
 			5)
+			trojan;;
+			6)
 			start_menu;;
 			*)
-			echo -e "${Error}请输入正确数字[0-5]"
+			echo -e "${Error}请输入正确数字[0-6]"
 			sleep 2s
 			manage_trojan;;
 		esac
@@ -1218,8 +1227,8 @@ start_menu(){
 	green_font ' 16.' ' 脚本自启管理'
 	green_font ' 0.' '  退出脚本'
 	yello_font "——————————————————————————————\n"
-	read -p "${Info}请输入数字[0-16](默认:2)：" num
-	[ -z $num ] && num=2
+	read -p "${Info}请输入数字[0-16](默认:1)：" num
+	[ -z $num ] && num=1
 	case $num in
 		0)
 		exit 0;;
