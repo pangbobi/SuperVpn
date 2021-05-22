@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.3
+sh_ver=6.8.4
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -632,6 +632,34 @@ EOF
 		echo -e "${Info}Trojan已成功更新..."
 		sleep 2s
 	}
+	transport_userfile(){
+		white_font "   ————胖波比————\n"
+		yello_font '——————方式选择——————'
+		green_font ' 1.' '  导出用户'
+		green_font ' 2.' '  导入用户'
+		yello_font '————————————————————'
+		green_font ' 0.' '  返回管理页'
+		yello_font "————————————————————\n"
+		read -p "${Info}请输入数字[0-2](默认:1)：" num
+		[ -z $num ] && num=1
+		clear && echo
+		case $num in
+			0)
+			manage_trojan;;
+			1)
+			trojan export /root/trojanuserfile
+			echo -e "${Info}用户文件已导出至$(green_font /root/trojanuserfile)..."
+			sleep 2s;;
+			2)
+			echo -e "${Info}请将用户文件放为$(green_font /root/trojanuserfile)..."
+			trojan import /root/trojanuserfile
+			sleep 2s;;
+			*)
+			echo -e "${Error}请输入正确数字[0-2]"
+			sleep 2s
+			transport_userfile;;
+		esac
+	}
 	clear && echo
 	if [ -z $trojan_status ];then
 		check_install 'Trojan'
@@ -644,12 +672,13 @@ EOF
 		green_font ' 3.' '  查看链接'
 		yello_font '—————Trojan设置—————'
 		green_font ' 4.' '  更新trojan'
-		green_font ' 5.' '  原版管理窗口'
+		green_font ' 5.' '  导出(入)用户'
+		green_font ' 6.' '  原版管理窗口'
 		yello_font '————————————————————'
-		green_font ' 6.' '  返回主页'
+		green_font ' 7.' '  返回主页'
 		green_font ' 0.' '  退出脚本'
 		yello_font "————————————————————\n"
-		read -p "${Info}请输入数字[0-6](默认:1)：" num
+		read -p "${Info}请输入数字[0-7](默认:1)：" num
 		[ -z $num ] && num=1
 		clear && echo
 		case $num in
@@ -666,11 +695,13 @@ EOF
 			4)
 			update_trojan;;
 			5)
-			trojan;;
+			transport_userfile;;
 			6)
+			trojan;;
+			7)
 			start_menu;;
 			*)
-			echo -e "${Error}请输入正确数字[0-6]"
+			echo -e "${Error}请输入正确数字[0-7]"
 			sleep 2s
 			manage_trojan;;
 		esac
