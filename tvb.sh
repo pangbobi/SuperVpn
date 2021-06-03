@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.4
+sh_ver=6.8.5
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -309,19 +309,16 @@ check_domain(){
 	fi
 }
 #安装Trojan
-TROJAN_U="${Github_U}/trojan.sh"
+TROJAN_U="https://git.io/trojan-install"
 install_trojan(){
 	if [ -z $trojan_status ];then
 		check_domain
 		add_firewall 80
 		add_firewall 443
 		ufw reload
-		curl -sO $TROJAN_U
-		chmod +x trojan.sh
-		source ./trojan.sh
+		source <(curl -sL $TROJAN_U)
 		sed -i '2itrojan_status=true' $CUR_D/.bash_profile
 		trojan_status='true'
-		rm -f trojan.sh
 		clear && echo
 		trojan info
 		echo -e "${Info}可访问$(green_font https://${domain})进入网页面板，按任意键继续..."
