@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.5
+sh_ver=6.8.6
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -629,6 +629,24 @@ EOF
 		echo -e "${Info}Trojan已成功更新..."
 		sleep 2s
 	}
+	change_trojan_port(){
+		Trojan_config_path='/usr/local/etc/trojan/config.json'
+		read -p "${Info}请输入要修改为的端口号[443-65535]：" newport
+		oldport=$(jq '.local_port' $Trojan_config_path)
+		if [ $newport -eq $oldport >/dev/null 2>&1 -o $newport -lt 443 >/dev/null 2>&1 -a $newport -gt 65535 >/dev/null 2>&1 ];then
+			echo -e "${Error}输入错误！有效端口范围：不为${oldport}且[443-65535]..."
+			sleep 2s
+			clear && echo
+			change_trojan_port
+		else
+			sed -i "s/: ${oldport}/: ${newport}/g" $Trojan_config_path
+			del_firewall $oldport
+			add_firewall $newport
+			echo -e "${Info}防火墙添加成功！"
+		fi
+		ufw reload
+		sleep 2s
+	}
 	transport_userfile(){
 		white_font "   ————胖波比————\n"
 		yello_font '——————方式选择——————'
@@ -669,13 +687,14 @@ EOF
 		green_font ' 3.' '  查看链接'
 		yello_font '—————Trojan设置—————'
 		green_font ' 4.' '  更新trojan'
-		green_font ' 5.' '  导出(入)用户'
-		green_font ' 6.' '  原版管理窗口'
+		green_font ' 5.' '  更改端口'
+		green_font ' 6.' '  导出(入)用户'
+		green_font ' 7.' '  原版管理窗口'
 		yello_font '————————————————————'
-		green_font ' 7.' '  返回主页'
+		green_font ' 8.' '  返回主页'
 		green_font ' 0.' '  退出脚本'
 		yello_font "————————————————————\n"
-		read -p "${Info}请输入数字[0-7](默认:1)：" num
+		read -p "${Info}请输入数字[0-8](默认:1)：" num
 		[ -z $num ] && num=1
 		clear && echo
 		case $num in
@@ -692,13 +711,15 @@ EOF
 			4)
 			update_trojan;;
 			5)
-			transport_userfile;;
+			change_trojan_port;;
 			6)
-			trojan;;
+			transport_userfile;;
 			7)
+			trojan;;
+			8)
 			start_menu;;
 			*)
-			echo -e "${Error}请输入正确数字[0-7]"
+			echo -e "${Error}请输入正确数字[0-8]"
 			sleep 2s
 			manage_trojan;;
 		esac
