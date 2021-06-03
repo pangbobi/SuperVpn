@@ -8,7 +8,7 @@ export PATH
 #################
 
 #版本
-sh_ver=6.8.6
+sh_ver=6.8.7
 #Github地址
 Github_U='https://raw.githubusercontent.com/pangbobi/SuperVpn/master'
 #脚本名
@@ -640,12 +640,13 @@ EOF
 			change_trojan_port
 		else
 			sed -i "s/: ${oldport}/: ${newport}/g" $Trojan_config_path
+			trojan restart
 			del_firewall $oldport
 			add_firewall $newport
 			echo -e "${Info}防火墙添加成功！"
+			ufw reload
+			sleep 2s
 		fi
-		ufw reload
-		sleep 2s
 	}
 	transport_userfile(){
 		white_font "   ————胖波比————\n"
