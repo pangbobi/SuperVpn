@@ -18,5 +18,5 @@ else
 	    INSTALL_CHECK="yes"
     else
         INSTALL_CHECK="no"
-    if
+    fi
 fi
