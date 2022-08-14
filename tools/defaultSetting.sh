@@ -23,9 +23,9 @@ yello_font(){
 	echo -e "\033[33m\033[01m$1\033[0m"
 }
 
-Info=`green_font [信息]`
-Error=`red_font [错误]`
-Tips=`yello_font [注意]`
+Info=$(green_font [信息])
+Error=$(red_font [错误])
+Tips=$(yello_font [注意])
 
 HOME_DIR="/root"
 INSATLL_DIR="/etc/SuperVpn"
