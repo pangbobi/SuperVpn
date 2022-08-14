@@ -11,11 +11,11 @@ PKG=$2
 # 检查 PKG 是否安装
 INSTALL_CHECK=$(which $PKG)
 if [ "$?" == "0" ];then
-	INSTALL_CHECK="yes"
+    INSTALL_CHECK="yes"
 else
     INSTALL_CHECK=$($PKM install -y $PKG)
-	if [ "$?" == "0" ];then
-	    INSTALL_CHECK="yes"
+    if [ "$?" == "0" ];then
+        INSTALL_CHECK="yes"
     else
         INSTALL_CHECK="no"
     fi
