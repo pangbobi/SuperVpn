@@ -9,6 +9,4 @@ OWNER_RES=$1
 LATEST_API="https://api.github.com/repos/${OWNER_RES}/releases/latest"
 
 # 进行 jq 解析 json 返回最新版本
-OWNER_RES="caddyserver/caddy"
-LATEST_API="https://api.github.com/repos/${OWNER_RES}/releases/latest"
-LATEST_VER=$(curl -s $LATEST_API |jq -r '.tag_name')
+LATEST_VER=$(curl -s "$LATEST_API" |jq -r '.tag_name')
