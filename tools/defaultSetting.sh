@@ -34,15 +34,3 @@ INSATLL_DIR="/etc/SuperVpn"
 SCIRIPT_DIR="${INSATLL_DIR}/sh"
 STATUS_FILE="${HOME_DIR}/SuperVpnStatus.json"
 PROJECT_URL="https://raw.githubusercontent.com/pangbobi/SuperVpn/master"
-
-if [ ! -f $STATUS_FILE ];then
-    # 检查jq是否安装
-    source <(curl -sL ${PROJECT_URL}/tools/checkInstall.sh) apt jq
-    if [ $INSTALL_CHECK == "no" ];then
-        echo -e "${Error}$(green_font jq)安装失败，请先自行安装 jq"
-        exit 1;
-    fi
-
-    # 在 root 文件夹下生成空配置文件
-    echo "{}" > $STATUS_FILE
-fi
