@@ -33,4 +33,8 @@ HOME_DIR="/root"
 INSATLL_DIR="/etc/SuperVpn"
 SCIRIPT_DIR="${INSATLL_DIR}/sh"
 STATUS_FILE="${HOME_DIR}/SuperVpnStatus.json"
-PROJECT_URL="https://raw.githubusercontent.com/pangbobi/SuperVpn/master"
+
+# 仓库地址函数
+getRepsAddr(){
+    echo "https://raw.githubusercontent.com/${1}/master"
+}
