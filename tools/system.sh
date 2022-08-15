@@ -6,6 +6,7 @@ export PATH
 osCPU=""
 osArchitecture="amd64"
 osInfo=""
+osBit=$(getconf LONG_BIT)
 osRelease=""
 osReleaseVersion=""
 osReleaseVersionNo=""
@@ -183,8 +184,41 @@ getLinuxOSRelease(){
 
     [[ -z $(echo $SHELL|grep zsh) ]] && osSystemShell="bash" || osSystemShell="zsh"
 
-    echo "OS info: ${osCPU}, ${osArchitecture}, ${osInfo}, ${osRelease}, ${osReleaseVersion}, ${osReleaseVersionNo}, ${osReleaseVersionNoShort}, ${osReleaseVersionCodeName}, ${osSystemPackage}, ${osSystemMdPath}, ${osSystemShell}, ${osVirtual}"
+    echo "OS info: ${osCPU}, ${osArchitecture}, ${osInfo}, ${osBit}, ${osRelease}, ${osReleaseVersion}, ${osReleaseVersionNo}, ${osReleaseVersionNoShort}, ${osReleaseVersionCodeName}, ${osSystemPackage}, ${osSystemMdPath}, ${osSystemShell}, ${osVirtual}"
+}
+
+# 记录信息到配置文件
+saveConfig(){
+    # 检查jq是否安装
+    source <(curl -sL ${PROJECT_URL}/tools/checkInstall.sh) $osSystemPackage jq
+    if [ $INSTALL_CHECK == "no" ];then
+        echo -e "${Error}$(green_font jq)安装失败，请先自行安装 jq"
+        exit 1;
+    fi
+
+    # 在 root 文件夹下生成配置文件
+    cat > $STATUS_FILE <<-EOF
+{
+    "OsInfo": {
+        "osCPU": "$osCPU",
+        "osArchitecture": "$osArchitecture",
+        "osInfo": "$osInfo",
+        "osBit": "$osBit",
+        "osRelease": "$osRelease",
+        "osReleaseVersion": "$osReleaseVersion",
+        "osReleaseVersionNo": "$osReleaseVersionNo",
+        "osReleaseVersionNoShort": "$osReleaseVersionNoShort",
+        "osReleaseVersionCodeName": "$osReleaseVersionCodeName",
+        "osSystemPackage": "$osSystemPackage",
+        "osSystemMdPath": "$osSystemMdPath",
+        "osSystemShell": "$osSystemShell",
+        "osVirtual": "$osVirtual"
+    }
+}
+EOF
 }
 
 # 执行检测
 getLinuxOSRelease
+# 保存结果
+saveConfig
