@@ -183,7 +183,7 @@ getLinuxOSRelease(){
 
     [[ -z $(echo $SHELL|grep zsh) ]] && osSystemShell="bash" || osSystemShell="zsh"
 
-    echo "OS info: ${osInfo}, ${osRelease}, ${osReleaseVersion}, ${osReleaseVersionNo}, ${osReleaseVersionCodeName}, ${osSystemShell}, ${osSystemPackage}, ${osSystemMdPath}, ${osVirtual}"
+    echo "OS info: ${osCPU}, ${osArchitecture}, ${osInfo}, ${osRelease}, ${osReleaseVersion}, ${osReleaseVersionNo}, ${osReleaseVersionNoShort}, ${osReleaseVersionCodeName}, ${osSystemPackage}, ${osSystemMdPath}, ${osSystemShell}, ${osVirtual}"
 }
 
 # 执行检测
