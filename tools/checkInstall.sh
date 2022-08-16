@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 # 安装工具
-PKM=$1
+osSystemPackage=$1
 
 # 工具包名
 PKG=$2
@@ -13,7 +13,7 @@ INSTALL_CHECK=$(which $PKG)
 if [ "$?" == "0" ];then
     INSTALL_CHECK="yes"
 else
-    INSTALL_CHECK=$($PKM install -y $PKG)
+    INSTALL_CHECK=$($osSystemPackage install -y $PKG)
     if [ "$?" == "0" ];then
         INSTALL_CHECK="yes"
     else
