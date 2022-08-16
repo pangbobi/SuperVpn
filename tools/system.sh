@@ -179,7 +179,7 @@ getLinuxOSRelease(){
 
     getLinuxOSVersion
     checkArchitecture
-	checkCPU
+    checkCPU
     virt_check
 
     [[ -z $(echo $SHELL|grep zsh) ]] && osSystemShell="bash" || osSystemShell="zsh"
@@ -189,31 +189,3 @@ getLinuxOSRelease(){
 
 # 执行检测
 getLinuxOSRelease
-
-# 检查jq是否安装
-source <(curl -sL ${PROJECT_URL}/tools/checkInstall.sh) $osSystemPackage jq
-if [ $INSTALL_CHECK == "no" ];then
-    echo -e "${Error}$(green_font jq)安装失败，请先自行安装 jq"
-    exit 1;
-fi
-
-# 在 root 文件夹下生成配置文件
-cat > $STATUS_FILE <<-EOF
-{
-    "OsInfo": {
-        "osCPU": "$osCPU",
-        "osArchitecture": "$osArchitecture",
-        "osBit": "$osBit",
-        "osInfo": "$osInfo",
-        "osRelease": "$osRelease",
-        "osReleaseVersion": "$osReleaseVersion",
-        "osReleaseVersionNo": "$osReleaseVersionNo",
-        "osReleaseVersionNoShort": "$osReleaseVersionNoShort",
-        "osReleaseVersionCodeName": "$osReleaseVersionCodeName",
-        "osSystemPackage": "$osSystemPackage",
-        "osSystemMdPath": "$osSystemMdPath",
-        "osSystemShell": "$osSystemShell",
-        "osVirtual": "$osVirtual"
-    }
-}
-EOF
