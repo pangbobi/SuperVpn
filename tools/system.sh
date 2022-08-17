@@ -190,11 +190,7 @@ getLinuxOSRelease(){
 # 保存系统信息到文件
 saveSystemInfo(){
     # 检查jq是否安装
-    source <(curl -sL ${PANGBOBI_URL}/tools/checkInstall.sh) $osSystemPackage jq
-    if [ $INSTALL_CHECK == "no" ];then
-        echo -e "${Error}$(green_font jq)安装失败，请先自行安装 jq"
-        exit 1;
-    fi
+    checkPKG $osSystemPackage jq
 
     # 在 root 文件夹下生成配置文件
     cat > $STATUS_FILE <<-EOF
