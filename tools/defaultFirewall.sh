@@ -18,11 +18,15 @@ Set_Firewall(){
 	if [[ "$osSystemPackage" =~ "apt" ]];then
 		$osSystemPackage install -y ufw
 		if [ -f "/usr/sbin/ufw" ];then
-			[ "$IPV6" == "yes" ] && sed -i 's/IPV6=no/IPV6=yes/g' /etc/default/ufw
 			ufw allow $sshPort
 
 			# 允许开机自启
+			if [ "$IPV6" == "yes" ];then
+				sed -i 's/IPV6=no/IPV6=yes/g' /etc/default/ufw
+				sed -i 's/ENABLED=no/ENABLED=yes/g' /etc/ufw/ufw.conf
+			fi
 			echo y|ufw enable
+			
 			# 默认允许出站，拒绝入站
 			ufw default deny
 			ufw reload
