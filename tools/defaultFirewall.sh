@@ -43,8 +43,6 @@ Set_Firewall(){
 				$iptableType -P INPUT DROP
 				service $iptableType save
 			}
-			choseIp6tables 'iptables'
-			[ "$IPV6" == "yes" ] && choseIp6tables 'ip6tables'
 
 			# 持久化保存
 			clear && echo
@@ -52,13 +50,17 @@ Set_Firewall(){
 			char=$(waitInput)
 			$osSystemPackage install -y iptables-persistent
 			
-			if [ "$(service iptables status | grep 'not running')" == "" ];then
-				service iptables restart
-				[ "$IPV6" == "yes" ] && service ip6tables restart
-			fi
+			choseIp6tables 'iptables'
+			service iptables restart
+			firewallTool="iptables"
 
+			if [ "$IPV6" == "yes" ];then
+				choseIp6tables 'ip6tables'
+				service ip6tables restart
+				firewallTool="ip6tables"
+			fi
+			
 			netfilter-persistent save
-			[ "$IPV6" == "yes" ] && firewallTool="ip6tables" || firewallTool="iptables"
 		else
 			AliyunCheck=$(cat /etc/redhat-release|grep "Aliyun Linux")
 			[ "$AliyunCheck" ] && return
