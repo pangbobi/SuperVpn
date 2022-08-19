@@ -37,8 +37,9 @@ Set_Firewall(){
 			choseIp6tables(){
 				iptableType=$1
 
-				$iptableType -I INPUT -p tcp -m state --state NEW -m tcp --dport $sshPort -j ACCEPT
-				$iptableType -I INPUT -p udp -m state --state NEW -m udp --dport $sshPort -j ACCEPT
+				# $iptableType -I INPUT -p tcp -m state --state NEW -m tcp --dport $sshPort -j ACCEPT
+				$iptableType -I INPUT -p tcp -m tcp --dport $sshPort -j ACCEPT
+				$iptableType -I INPUT -p udp -m udp --dport $sshPort -j ACCEPT
 				
 				# 保持已连接的会话不断开
 				$iptableType -A INPUT -p icmp --icmp-type any -j ACCEPT
