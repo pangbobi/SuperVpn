@@ -15,44 +15,46 @@ CA_TYPE=$5
 # 验证端口
 port=$6
 
-# 下载到本地并赋予执行权限
-wget -O $(pwd)/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
-chmod +x acme.sh
+if [ ! -f "${SSL_DIR}/acme.sh" ];then
+    # 下载到本地并赋予执行权限
+    wget -O $(pwd)/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
+    chmod +x acme.sh
 
-# 安装 socat
-if [ ! "$(which socat)" ];then
-    $osSystemPackage install -y socat
-fi
-# 开放端口权限给 socat
-setcap 'cap_net_bind_service=+ep' $(which socat)
+    # 安装 socat
+    if [ ! "$(which socat)" ];then
+        $osSystemPackage install -y socat
+    fi
+    # 开放端口权限给 socat
+    setcap 'cap_net_bind_service=+ep' $(which socat)
 
-# 安装 acme.sh
-./acme.sh --install \
---home $SSL_DIR \
---accountemail "$YOUR_EMAIL" \
---no-cron
+    # 安装 acme.sh
+    ./acme.sh --install \
+    --home $SSL_DIR \
+    --accountemail "$YOUR_EMAIL" \
+    --no-cron
 
-# 删除文件
-rm -f acme.sh
+    # 删除文件
+    rm -f acme.sh
 
-# 自动更新 acme.sh
-${SSL_DIR}/acme.sh --upgrade --auto-upgrade
-# 设置证书自动更新
-${SSL_DIR}/acme.sh --uninstall-cronjob
-${SSL_DIR}/acme.sh --install-cronjob
+    # 自动更新 acme.sh
+    ${SSL_DIR}/acme.sh --upgrade --auto-upgrade
+    # 设置证书自动更新
+    ${SSL_DIR}/acme.sh --uninstall-cronjob
+    ${SSL_DIR}/acme.sh --install-cronjob
 
-# 设置默认 CA
-${SSL_DIR}/acme.sh --set-default-ca --server $CA_TYPE
-# 使用邮箱注册 zerossl,letsencrypt 服务
-${SSL_DIR}/acme.sh --register-account -m $YOUR_EMAIL --server $CA_TYPE
+    # 设置默认 CA
+    ${SSL_DIR}/acme.sh --set-default-ca --server $CA_TYPE
+    # 使用邮箱注册 zerossl,letsencrypt 服务
+    ${SSL_DIR}/acme.sh --register-account -m $YOUR_EMAIL --server $CA_TYPE
 
-# 安装 lsof
-if [ ! "$(which lsof)" ];then
-    $osSystemPackage install -y lsof
+    # 安装 lsof
+    if [ ! "$(which lsof)" ];then
+        $osSystemPackage install -y lsof
+    fi
 fi
 
 # 执行申请
-ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --server $CA_TYPE --keylength ec-256 --insecure"
+ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --server $CA_TYPE --keylength ec-256"
 if [[ $port == "80" && ! "$(lsof -i:80)" ]];then
     # 80端口空闲
     PATTERN="--standalone"
