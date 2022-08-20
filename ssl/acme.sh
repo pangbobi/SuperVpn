@@ -59,7 +59,7 @@ if [ ! -f "${SSL_DIR}/acme.sh" ];then
 fi
 
 # 执行申请
-ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --keylength ec-256"
+ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --keylength ec-256 --force"
 if [[ $port == "80" && ! "$(lsof -i:80)" ]];then
     # 80端口空闲
     PATTERN="--standalone"
