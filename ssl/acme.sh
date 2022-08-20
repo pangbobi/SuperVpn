@@ -15,6 +15,11 @@ CA_TYPE=$5
 # 验证端口
 port=$6
 
+# 生成逐级目录
+if [ ! -d "${SSL_DIR}/cert" ];then
+    mkdir -p ${SSL_DIR}/cert
+fi
+
 if [ ! -f "${SSL_DIR}/acme.sh" ];then
     # 下载到本地并赋予执行权限
     wget -O $(pwd)/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
@@ -54,13 +59,14 @@ if [ ! -f "${SSL_DIR}/acme.sh" ];then
 fi
 
 # 执行申请
-ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --server $CA_TYPE --keylength ec-256"
+ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --keylength ec-256"
 if [[ $port == "80" && ! "$(lsof -i:80)" ]];then
     # 80端口空闲
     PATTERN="--standalone"
 elif [[ $port == "443" && ! "$(lsof -i:443)" ]];then
     # 443端口空闲
     PATTERN="--alpn"
+    CA_TYPE="letsencrypt"
 else
     case $port in
         "80")
@@ -74,10 +80,11 @@ else
     esac
     exit 1;
 fi
-$ISSUE_CMD $PATTERN
+$ISSUE_CMD $PATTERN --server $CA_TYPE
 
 # 安装到指定路径
 ${SSL_DIR}/acme.sh --install-cert \
--d $YOUR_DOMAIN \
+-d ${YOUR_DOMAIN} \
 --key-file ${SSL_DIR}/cert/${YOUR_DOMAIN}.key \
---fullchain-file ${SSL_DIR}/cert/${YOUR_DOMAIN}.pem
+--fullchain-file ${SSL_DIR}/cert/${YOUR_DOMAIN}.pem \
+--ecc
