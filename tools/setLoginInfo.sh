@@ -6,8 +6,6 @@ export PATH
 STATUS_FILE=$1
 # 更改类型
 Modify_Type=$2
-# 新 SSH 端口
-[ "$Modify_Type" == "sshPort" ] && new_port=$3
 
 # 载入颜色
 source <(curl -sL https://raw.githubusercontent.com/pangbobi/SuperVpn/master/tools/color.sh)
@@ -65,15 +63,21 @@ modifyPS(){
     modifySshPort(){
         old_port=$(cat /etc/ssh/sshd_config | grep 'Port '| awk '{print $2}')
 
-        if [ "$old_port" != "$new_port" ];then
-            sed -i "s/.*Port ${old_port}/Port ${new_port}/g" /etc/ssh/sshd_config
-            restartSshd
+        if [ "$old_port" != "$sshPort" ];then
+            sed -i "s/.*Port ${old_port}/Port ${sshPort}/g" /etc/ssh/sshd_config
+            if [ "$(which semanage)" ];then
+                semanage port -a -t ssh_port_t -p tcp $sshPort
+                restartSshd
+                semanage port -d -t ssh_port_t -p tcp $old_port
+            else
+                restartSshd
+            fi
         fi
 
-        jq '.LoginInfo.sshPort="'$new_port'"' $STATUS_FILE > tmp.json
+        jq '.LoginInfo.sshPort="'$sshPort'"' $STATUS_FILE > tmp.json
         mv tmp.json $STATUS_FILE
 
-        echo -e "${Info}您当前的 SSH 端口是：$(green_font $new_port)"
+        echo -e "${Info}您当前的 SSH 端口是：$(green_font $sshPort)"
     }
 
     # 入口
