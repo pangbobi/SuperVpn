@@ -16,15 +16,12 @@ CA_TYPE=$5
 port=$6
 
 # 生成逐级目录
-if [ ! -d "${SSL_DIR}/cert" ];then
-    mkdir -p ${SSL_DIR}/cert
+if [ ! -d "$SSL_DIR" ];then
+    mkdir -p $SSL_DIR
 fi
 
-if [ ! -f "${SSL_DIR}/acme.sh" ];then
-    # 下载到本地并赋予执行权限
-    wget -O $(pwd)/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
-    chmod +x acme.sh
-
+ACME_SH="/root/.acme.sh/acme.sh"
+if [ ! -d "/root/.acme.sh" ];then
     # 安装 socat
     if [ ! "$(which socat)" ];then
         $osSystemPackage install -y socat
@@ -32,25 +29,18 @@ if [ ! -f "${SSL_DIR}/acme.sh" ];then
     # 开放端口权限给 socat
     setcap 'cap_net_bind_service=+ep' $(which socat)
 
-    # 安装 acme.sh
-    ./acme.sh --install \
-    --home $SSL_DIR \
-    --accountemail "$YOUR_EMAIL" \
-    --no-cron
-
-    # 删除文件
-    rm -f acme.sh
+    # 官网在线安装
+    wget -O -  https://get.acme.sh | sh -s email="$YOUR_EMAIL"
 
     # 自动更新 acme.sh
-    ${SSL_DIR}/acme.sh --upgrade --auto-upgrade
+    $ACME_SH --upgrade --auto-upgrade
     # 设置证书自动更新
-    ${SSL_DIR}/acme.sh --uninstall-cronjob
-    ${SSL_DIR}/acme.sh --install-cronjob
+    # $ACME_SH --install-cronjob
 
     # 设置默认 CA
-    ${SSL_DIR}/acme.sh --set-default-ca --server $CA_TYPE
+    $ACME_SH --set-default-ca --server $CA_TYPE
     # 使用邮箱注册 zerossl,letsencrypt 服务
-    ${SSL_DIR}/acme.sh --register-account -m $YOUR_EMAIL --server $CA_TYPE
+    $ACME_SH --register-account -m $YOUR_EMAIL --server $CA_TYPE
 
     # 安装 lsof
     if [ ! "$(which lsof)" ];then
@@ -59,7 +49,7 @@ if [ ! -f "${SSL_DIR}/acme.sh" ];then
 fi
 
 # 执行申请
-ISSUE_CMD="${SSL_DIR}/acme.sh --issue -d $YOUR_DOMAIN --keylength ec-256 --force"
+ISSUE_CMD="$ACME_SH --issue -d $YOUR_DOMAIN --keylength ec-256 --force"
 if [[ $port == "80" && ! "$(lsof -i:80)" ]];then
     # 80端口空闲
     PATTERN="--standalone"
@@ -83,8 +73,8 @@ fi
 $ISSUE_CMD $PATTERN --server $CA_TYPE
 
 # 安装到指定路径
-${SSL_DIR}/acme.sh --install-cert \
--d ${YOUR_DOMAIN} \
---key-file ${SSL_DIR}/cert/${YOUR_DOMAIN}.key \
---fullchain-file ${SSL_DIR}/cert/${YOUR_DOMAIN}.pem \
+$ACME_SH --install-cert \
+-d $YOUR_DOMAIN \
+--key-file ${SSL_DIR}/${YOUR_DOMAIN}.key \
+--fullchain-file ${SSL_DIR}/${YOUR_DOMAIN}.pem \
 --ecc
