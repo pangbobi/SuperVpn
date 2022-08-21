@@ -36,7 +36,7 @@ modifyPS(){
             old_password=$(jq -r '.LoginInfo.password' $STATUS_FILE)
 
             echo -e "\n${Info}您之前的 root 登录密码是：$(red_font ${old_password})"
-            read -p "${Info}是否修改 root 登录密码[y/n](默认:n)：" num
+            unset num && read -p "${Info}是否修改 root 登录密码[y/n](默认:n)：" num
 		    [ -z $num ] && num='n'
         fi
 

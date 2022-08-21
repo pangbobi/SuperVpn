@@ -67,15 +67,13 @@ getPort(){
 	else
 		clear && echo
 		while true;do
-			read -p "${Info}请输入要使用的端口号[0-65535]：" port
+			unset port && read -p "${Info}请输入要使用的端口号[0-65535]：" port
 			if [[ $port -ge "0" && $port -le "65535" && ! "$(lsof -i:$port)" ]];then
 				break
 			fi
 			echo -e "${Error}端口$(green_font $port)不合法或已被占用"
 		done
 	fi
-	
-	echo $port
 }
 
 # 满足系统/版本/位数要求
