@@ -29,8 +29,16 @@ if [ ! -d "/root/.acme.sh" ];then
     # 开放端口权限给 socat
     setcap 'cap_net_bind_service=+ep' $(which socat)
 
-    # 官网在线安装
-    wget -O -  https://get.acme.sh | sh -s email="$YOUR_EMAIL"
+    # 下载到本地并赋予执行权限
+    wget -O $(pwd)/acme.sh https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh
+    chmod +x acme.sh
+
+    # 进行本地安装
+    ./acme.sh --install \
+    --accountemail $YOUR_EMAIL
+
+    # 安装完毕进行删除
+    rm -f acme.sh
 
     # 自动更新 acme.sh
     $ACME_SH --upgrade --auto-upgrade
