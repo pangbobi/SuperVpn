@@ -92,15 +92,15 @@ checkSysVerBit(){
 	if [ "$osBit" == "64" ];then
 		case "$osRelease" in
 			"debian")
-				if [ "$osReleaseVersion" < "10" ];then
+				if [ "$osReleaseVersion" -lt "10" ];then
 					msgSysVerBit
 				fi;;
 			"ubuntu")
-				if [ "$osReleaseVersion" < "18" ];then
+				if [ "$osReleaseVersion" -lt "18" ];then
 					msgSysVerBit
 				fi;;
 			"centos")
-				if [ "$osReleaseVersion" < "8" ];then
+				if [ "$osReleaseVersion" -lt "8" ];then
 					msgSysVerBit
 				fi;;
 			*) msgSysVerBit;;
