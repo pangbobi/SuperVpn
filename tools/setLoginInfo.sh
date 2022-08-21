@@ -56,7 +56,7 @@ modifyPS(){
         echo -e "\n${Info}您当前的 root 登录密码是：$(red_font ${new_password})"
 
         # 重启 SSH 服务
-        restartSshd
+        [ ! "$num" == "n" ] && restartSshd
     }
 
     # 更改 SSH 端口
